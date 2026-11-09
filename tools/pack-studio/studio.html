@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Pack studio</title>
+<style>
+  @font-face { font-family: Switzer; font-weight: 400; src: url(/src/fonts/Switzer-400.woff2) format("woff2"); }
+  @font-face { font-family: Switzer; font-weight: 500; src: url(/src/fonts/Switzer-500.woff2) format("woff2"); }
+  @font-face { font-family: Switzer; font-weight: 600; src: url(/src/fonts/Switzer-600.woff2) format("woff2"); }
+  @font-face { font-family: Switzer; font-weight: 700; src: url(/src/fonts/Switzer-700.woff2) format("woff2"); }
+  body { margin: 0; background: #ddd; font-family: Switzer; }
+  canvas { display: block; max-width: 100vw; height: auto; }
+</style>
+<script type="importmap">
+  { "imports": { "three": "/node_modules/three/build/three.module.js", "three/addons/": "/node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<script type="module" src="./studio.js"></script>
+</body>
+</html>
