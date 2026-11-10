@@ -59,6 +59,66 @@ export const Icon = {
       <path d="m5 12.5 4.5 4.5L19 7.5" />
     </svg>
   ),
+  Bag: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="M5 8h14l-1.2 12H6.2L5 8Z" />
+      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+    </svg>
+  ),
+  User: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <circle cx="12" cy="8.5" r="3.8" />
+      <path d="M4.5 20c1.3-3.6 4.1-5.3 7.5-5.3s6.2 1.7 7.5 5.3" />
+    </svg>
+  ),
+  Eye: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  Truck: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7z" />
+      <circle cx="6.5" cy="17" r="1.6" />
+      <circle cx="17" cy="17" r="1.6" />
+    </svg>
+  ),
+  Shield: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="M12 3 4.5 6v5.5c0 4.5 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5 7.5-9.5V6L12 3Z" />
+      <path d="m8.8 12 2.2 2.2 4.2-4.4" />
+    </svg>
+  ),
+  Leaf: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14" />
+      <path d="M5 19 14 10" />
+    </svg>
+  ),
+  Flask: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="M9.5 3h5M10.5 3v5.5L5 19a1.5 1.5 0 0 0 1.3 2h11.4a1.5 1.5 0 0 0 1.3-2l-5.5-10.5V3" />
+      <path d="M7.5 15h9" />
+    </svg>
+  ),
+  Target: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="12" cy="12" r="1" />
+    </svg>
+  ),
+  ChevronLeft: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="m15 6-6 6 6 6" />
+    </svg>
+  ),
+  ChevronRight: ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  ),
   Filters: ({ className }: IconProps) => (
     <svg viewBox="0 0 24 24" className={className} aria-hidden {...base}>
       <path d="M3 7h11M18 7h3M3 17h4M11 17h10" />

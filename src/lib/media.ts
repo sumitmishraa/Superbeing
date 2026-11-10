@@ -67,8 +67,42 @@ export function doseFor(p: Product, ingredient: string) {
   return null;
 }
 
+/** Product shot on a white plinth (cards, gallery). Coming-soon packs use an unbranded plinth shot. */
+export function plinthSrc(p: Product, back = false) {
+  if (p.status !== "live") return `/packs/_blank/${BLANK[p.shape]}-plinth.webp`;
+  return `/packs/${p.slug}/${back ? "plinth-back" : "plinth"}.webp`;
+}
+
+/** "₹799 – ₹1,499" when a trial pack exists, else the single price. */
+export function priceRange(p: Product, fmt: (n: number) => string) {
+  return p.trialPack ? `${fmt(p.trialPack.price)} – ${fmt(p.price)}` : fmt(p.price);
+}
+
+/** Lifestyle scenes. `ai` ones are AI-generated scenes built from our pack renders; the rest are studio renders. */
+export const SCENES = {
+  heroGut: { src: "/media/gen/hero-gut.webp", alt: "Bloat + Gut Reset carton and sachet on a sunlit kitchen counter", ai: true },
+  heroSleep: { src: "/media/gen/hero-sleep.webp", alt: "Night Recovery Magnesium carton and sachet on a white podium", ai: false },
+  heroHydration: { src: "/media/gen/hero-hydration.webp", alt: "Hydra Move and Hydra Zero stick sachets on white podiums", ai: false },
+  feature: { src: "/media/gen/feature-new.webp", alt: "Collagen Glow Matrix carton and sachet on a podium", ai: false },
+  popup: { src: "/media/gen/popup.webp", alt: "Bloat + Gut Reset and Collagen Glow Matrix packs on podiums", ai: false },
+  collection: { src: "/media/gen/collection-hero.webp", alt: "Five Superbeing products on podiums", ai: false },
+  labelBanner: { src: "/media/gen/label-banner.webp", alt: "Four Superbeing products on podiums", ai: false },
+} as const;
+export const NEED_TILE: Partial<Record<Product["need"], { src: string; alt: string }>> = {
+  gut: { src: "/media/gen/tile-gut.webp", alt: "Bloat + Gut Reset with ginger, fennel and mint" },
+  sleep: { src: "/media/gen/tile-sleep.webp", alt: "Night Recovery Magnesium on a podium" },
+  stress: { src: "/media/gen/tile-stress.webp", alt: "StressCalm Nutrition bottle on a desk with tea and saffron" },
+  hydration: { src: "/media/gen/tile-hydration.webp", alt: "Hydra Zero stick sachets on a podium" },
+  beauty: { src: "/media/gen/tile-beauty.webp", alt: "Collagen Glow Matrix on a podium" },
+};
+
 /** Public-domain plates used for ingredient pictures (credited in the footer). */
 export const PLATE_CREDITS = [
   { label: "Köhler's Medizinal-Pflanzen (1887–1890)", href: "https://commons.wikimedia.org/wiki/Category:K%C3%B6hler%27s_Medizinal-Pflanzen" },
   { label: "Wild Flowers of New York, plate 158-A (1918)", href: "https://commons.wikimedia.org/wiki/File:Vaccinium_macrocarpon_WFNY-158A.jpg" },
 ];
+
+/** Estimated delivery date (today + 4 days), for display only. */
+export function etaLabel() {
+  return new Date(Date.now() + 4 * 864e5).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long" });
+}

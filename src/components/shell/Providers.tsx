@@ -19,6 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const cartOpen = useStore((s) => s.cartOpen);
   const searchOpen = useStore((s) => s.searchOpen);
   const menuOpen = useStore((s) => s.menuOpen);
+  const quickShop = useStore((s) => s.quickShop);
 
   useEffect(() => {
     if (reduceMotion() || window.matchMedia("(pointer: coarse)").matches) return;
@@ -36,11 +37,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const locked = cartOpen || searchOpen || menuOpen;
+    const locked = cartOpen || searchOpen || menuOpen || !!quickShop;
     if (locked) lenisRef.current?.stop();
     else lenisRef.current?.start();
     document.documentElement.style.overflow = locked ? "hidden" : "";
-  }, [cartOpen, searchOpen, menuOpen]);
+  }, [cartOpen, searchOpen, menuOpen, quickShop]);
 
   useEffect(() => {
     lenisRef.current?.scrollTo(0, { immediate: true });
@@ -48,6 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     s.setCartOpen(false);
     s.setSearchOpen(false);
     s.setMenuOpen(false);
+    s.setQuickShop(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -108,6 +110,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         s.setSearchOpen(false);
         s.setCartOpen(false);
         s.setMenuOpen(false);
+        s.setQuickShop(null);
       }
     };
     window.addEventListener("keydown", onKey);

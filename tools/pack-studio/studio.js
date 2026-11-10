@@ -585,6 +585,73 @@ async function render({ slug, blank, view = "front", frame: fi = 0, frames = 36,
   scene.add(root);
   let fill = 0.86;
 
+  if (view === "plinth" || view === "plinth-back") {
+    // Product shot on a white cube, as on the reference's cards.
+    const back = view === "plinth-back";
+    if (!back && shape === "carton" && p) {
+      const carton = await buildCarton(p);
+      carton.rotation.y = -0.45;
+      carton.position.set(-0.22, 0.6, -0.12);
+      const s = await buildSachet(p, "carton");
+      s.rotation.set(-0.08, -0.15, 0.06);
+      s.position.set(0.4, 0.5, 0.38);
+      root.add(carton, s);
+    } else if (!back && (shape === "stick" || shape === "melt") && p) {
+      for (let i = 0; i < 3; i++) {
+        const s = await buildSachet(p, shape);
+        s.rotation.set(0, -0.3 + i * 0.2, (i - 1) * 0.12);
+        s.position.set((i - 1) * (shape === "stick" ? 0.3 : 0.42), 0, (i === 1 ? 0.12 : 0) - i * 0.02);
+        root.add(s);
+      }
+    } else {
+      const obj = await heroObject(p, shape);
+      if (shape === "bottle" || shape === "tub") obj.position.y = -0.5;
+      obj.rotation.y = back ? Math.PI - 0.25 : -0.3;
+      root.add(obj);
+    }
+    root.updateMatrixWorld(true);
+    const bb = new THREE.Box3().setFromObject(root);
+    const size = bb.getSize(new THREE.Vector3());
+    const centre = bb.getCenter(new THREE.Vector3());
+    scene.background = new THREE.Color("#ffffff");
+    const plinthH = size.y * 0.55;
+    const plinth = new THREE.Mesh(
+      new THREE.BoxGeometry(size.x * 2.6 + 1.2, plinthH, size.z * 2 + 1.0),
+      new THREE.MeshStandardMaterial({ color: "#f2f2f2", roughness: 0.92 }),
+    );
+    plinth.position.set(centre.x, bb.min.y - plinthH / 2 - 0.002, centre.z - 0.15);
+    root.add(plinth);
+    const sh = canvas(256, 256);
+    const sctx = sh.getContext("2d");
+    const grd = sctx.createRadialGradient(128, 128, 10, 128, 128, 128);
+    grd.addColorStop(0, "rgba(0,0,0,0.28)");
+    grd.addColorStop(1, "rgba(0,0,0,0)");
+    sctx.fillStyle = grd;
+    sctx.fillRect(0, 0, 256, 256);
+    const shadow = new THREE.Mesh(
+      new THREE.PlaneGeometry(size.x * 1.4, size.z * 1.4 + 0.5),
+      new THREE.MeshBasicMaterial({ map: tex(sh), transparent: true, depthWrite: false }),
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.set(centre.x, bb.min.y + 0.001, centre.z);
+    root.add(shadow);
+    camera.fov = 22;
+    camera.aspect = w / h;
+    const vfov = THREE.MathUtils.degToRad(camera.fov);
+    const needH = Math.max(size.y, size.x / camera.aspect) / 0.56;
+    const dist = needH / 2 / Math.tan(vfov / 2) + size.z / 2;
+    camera.position.set(centre.x, centre.y + size.y * 0.32, centre.z + dist);
+    camera.lookAt(centre.x, centre.y - size.y * 0.16, centre.z);
+    camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+    const purl = renderer.domElement.toDataURL("image/webp", 0.86);
+    root.traverse((o) => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) for (const m of [].concat(o.material)) (m.map && m.map.dispose(), m.dispose());
+    });
+    return purl;
+  }
+
   if (view === "duo" && shape === "carton") {
     const carton = await buildCarton(p);
     carton.rotation.y = -0.5;
@@ -631,5 +698,80 @@ async function render({ slug, blank, view = "front", frame: fi = 0, frames = 36,
   return url;
 }
 
-window.studio = { render, renderMaterial, materials: Object.keys(MATERIALS), products: DATA.products.map((p) => p.slug) };
+/** Stage: one or more packs on podiums against a flat colour backdrop, framed with headline space. */
+async function renderStage({ slugs, bg = "#ffffff", podium = "#f2f2f2", w = 1600, h = 900, align = "right", spread = 1 }) {
+  for (const c of [...scene.children]) if (c.userData.pack) scene.remove(c);
+  renderer.setSize(w, h, false);
+  scene.background = new THREE.Color(bg);
+  const root = new THREE.Group();
+  root.userData.pack = true;
+  scene.add(root);
+  const heights = [0.55, 0.85, 0.4, 0.7, 0.5];
+  let x = 0;
+  for (let i = 0; i < slugs.length; i++) {
+    const p = BY_SLUG[slugs[i]];
+    const item = new THREE.Group();
+    if (p.shape === "carton") {
+      const carton = await buildCarton(p);
+      carton.rotation.y = -0.4;
+      carton.position.set(-0.18, 0.6, -0.1);
+      const s = await buildSachet(p, "carton");
+      s.rotation.set(-0.06, -0.15, 0.06);
+      s.position.set(0.38, 0.5, 0.36);
+      item.add(carton, s);
+    } else if (p.shape === "stick" || p.shape === "melt") {
+      for (let k = 0; k < 3; k++) {
+        const s = await buildSachet(p, p.shape);
+        s.rotation.set(0, -0.3 + k * 0.2, (k - 1) * 0.12);
+        s.position.set((k - 1) * (p.shape === "stick" ? 0.3 : 0.42), 0.62, (k === 1 ? 0.12 : 0) - k * 0.02);
+        item.add(s);
+      }
+    } else {
+      const obj = await heroObject(p, p.shape);
+      obj.rotation.y = -0.3;
+      item.add(obj);
+    }
+    item.updateMatrixWorld(true);
+    const ib = new THREE.Box3().setFromObject(item);
+    const isz = ib.getSize(new THREE.Vector3());
+    const ph = slugs.length > 1 ? heights[i % heights.length] : 0.5;
+    const r = Math.max(isz.x, isz.z) * 0.62 + 0.12;
+    const pod = new THREE.Mesh(new THREE.CylinderGeometry(r, r, ph, 96), new THREE.MeshStandardMaterial({ color: podium, roughness: 0.85 }));
+    item.position.y = ph - ib.min.y;
+    pod.position.y = ph / 2;
+    const holder = new THREE.Group();
+    holder.add(pod, item);
+    holder.position.x = x + r;
+    x += 2 * r + 0.18 * spread;
+    root.add(holder);
+  }
+  // floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: bg, roughness: 1 }));
+  floor.rotation.x = -Math.PI / 2;
+  root.add(floor);
+  const bb = new THREE.Box3();
+  root.children.filter((c) => c !== floor).forEach((c) => bb.expandByObject(c));
+  const size = bb.getSize(new THREE.Vector3());
+  const centre = bb.getCenter(new THREE.Vector3());
+  camera.fov = 24;
+  camera.aspect = w / h;
+  const vfov = THREE.MathUtils.degToRad(camera.fov);
+  const share = align === "center" ? 0.8 : slugs.length > 2 ? 0.66 : 0.46;
+  const needH = Math.max(size.y / 0.72, size.x / camera.aspect / share);
+  const dist = needH / 2 / Math.tan(vfov / 2) + size.z / 2;
+  const viewW = needH * camera.aspect;
+  const shift = align === "right" ? -viewW * 0.22 : align === "left" ? viewW * 0.22 : 0;
+  camera.position.set(centre.x + shift, centre.y + size.y * 0.35, centre.z + dist);
+  camera.lookAt(centre.x + shift, centre.y - size.y * 0.05, centre.z);
+  camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+  const url = renderer.domElement.toDataURL("image/webp", 0.88);
+  root.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) for (const m of [].concat(o.material)) (m.map && m.map.dispose(), m.dispose());
+  });
+  return url;
+}
+
+window.studio = { render, renderStage, renderMaterial, materials: Object.keys(MATERIALS), products: DATA.products.map((p) => p.slug) };
 window.studioReady = true;

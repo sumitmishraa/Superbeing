@@ -1,6 +1,12 @@
 # Superbeing Nutrition storefront
 
-A frontend-only store for Superbeing Nutrition, laid out on the Ronas IT "perf." luxury ecommerce concept (Behance 253824053) and recoloured for Superbeing. Built with Next.js 16, Tailwind 4, GSAP (ScrollTrigger, Flip, SplitText) and Lenis. There is no backend: the cart, wishlist, account, orders and notify-me requests are saved in the visitor's browser (localStorage).
+A frontend-only store for Superbeing Nutrition. Version 3 follows the layout and motion of shortcutx.co (announcement bar, mega-menu, hero carousel, category tiles, product cards on white plinths with Quick shop, long-form product pages with a sticky add-to-cart bar, comparison table and FAQs, 10%-off pop-up), recoloured in Superbeing raspberry (#A0153E) with Oswald and Inter. Built with Next.js 16, Tailwind 4, GSAP and Lenis. There is no backend: cart, wishlist, account and orders are saved in the visitor's browser.
+
+Things the reference shows that this store deliberately does not invent: star ratings, review counts, customer videos, before/after photos, "#1 best selling" and sales counters. Each slot is filled with true content instead (branded-ingredient strip, catalogue count-ups, pack turntables, label banners).
+
+### Images
+- **Product cards and galleries:** three.js renders of our own label designs (`public/packs/<slug>/plinth.webp`, `plinth-back.webp`, `front`, `back`, `duo`, `macro`, `turn/`).
+- **Lifestyle scenes:** `public/media/gen/`. `hero-gut`, `tile-gut` and `tile-stress` are AI-generated with ElevenLabs (Nano Banana Pro) from our pack renders; small print on those packs may differ slightly from the real label. The rest are studio renders (`node tools/pack-studio/render.mjs --only stages`). Swap in real photography with the same file names.
 
 ## Run it
 

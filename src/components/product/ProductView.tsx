@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { NEED_BY_ID, PRODUCTS, PRODUCT_BY_SLUG, doseCount, type Product } from "@/data/products";
+import { NEED_BY_ID, PRODUCTS, PRODUCT_BY_SLUG, FREE_SHIPPING_AT, doseCount, formatINR, type Product } from "@/data/products";
 import { useStore, useHydrated, type PackOption } from "@/lib/store";
-import { TURN_FRAMES, doseFor, hasDuo, ingredientImage, packAlt, packSrc, turnSrc, type PackView } from "@/lib/media";
+import { TURN_FRAMES, doseFor, hasDuo, ingredientImage, packAlt, packSrc, plinthSrc, turnSrc, etaLabel, type PackView } from "@/lib/media";
 import { DoseLabel } from "@/components/DoseLabel";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard, Carousel } from "@/components/ProductCard";
 import { AddToCart, Icon, VegMark, WishlistButton } from "@/components/ui";
 import { gsap, useGSAP, reduceMotion } from "@/lib/gsap";
 
@@ -199,7 +199,9 @@ export function ProductView({ slug }: { slug: string }) {
   const p = PRODUCT_BY_SLUG[slug];
   const need = NEED_BY_ID[p.need];
   const live = p.status === "live";
-  const [view, setView] = useState<PackView | "turn">(live ? "turn" : "front");
+  const [view, setView] = useState<PackView | "turn" | "plinth">("plinth");
+  const hydratedEta = useHydrated();
+  const eta = hydratedEta ? etaLabel() : "";
   const [option, setOption] = useState<PackOption>("standard");
   const [subscribe, setSubscribe] = useState(false);
   const pushRecent = useStore((s) => s.pushRecent);
@@ -213,7 +215,7 @@ export function ProductView({ slug }: { slug: string }) {
   const unit = option === "trial" && p.trialPack ? p.trialPack.price : p.price;
   const price = subscribe ? Math.round(unit * 0.85) : unit;
   const keys = live ? p.keyIngredients.slice(0, 4) : [];
-  const same = [...PRODUCTS.filter((x) => x.need === p.need && x.slug !== p.slug), ...PRODUCTS.filter((x) => x.need !== p.need && x.status === "live")].slice(0, 4);
+  const same = [...PRODUCTS.filter((x) => x.need === p.need && x.slug !== p.slug), ...PRODUCTS.filter((x) => x.need !== p.need && x.status === "live")].slice(0, 8);
 
   // Ingredients float in around the pack and drift with the pointer.
   useGSAP(
@@ -247,9 +249,10 @@ export function ProductView({ slug }: { slug: string }) {
     return () => io.disconnect();
   }, [live]);
 
-  const views: { id: PackView | "turn"; label: string }[] = live
+  const views: { id: PackView | "turn" | "plinth"; label: string }[] = live
     ? [
-        { id: "turn", label: "Turn the pack" },
+        { id: "plinth", label: "Pack" },
+        { id: "turn", label: "Turn the pack (360 degrees)" },
         { id: "back", label: "Back of pack" },
         ...(hasDuo(p) ? [{ id: "duo" as const, label: p.shape === "carton" ? "Carton and sachet" : "Three sachets" }] : []),
         { id: "macro", label: "Label close-up" },
@@ -257,12 +260,25 @@ export function ProductView({ slug }: { slug: string }) {
     : [];
 
   return (
-    <div className={showBar ? "pb-24 md:pb-0" : ""}>
-      <section className="wrap grid gap-8 pt-6 pb-16 md:grid-cols-12 md:gap-6 md:pt-10">
+    <div className={showBar ? "pb-24 lg:pb-20" : ""}>
+      <div className="band-grey">
+        <nav aria-label="Breadcrumb" className="wrap crumbs flex flex-wrap items-center gap-2 py-4">
+          <Link href="/" className="text-charcoal hover:text-accent">
+            Home
+          </Link>
+          <Icon.ChevronRight className="size-3.5" />
+          <Link href={`/shop?need=${p.need}`} className="text-charcoal hover:text-accent">
+            {need.name}
+          </Link>
+          <Icon.ChevronRight className="size-3.5" />
+          <span aria-current="page">{p.name}</span>
+        </nav>
+      </div>
+      <section className="wrap grid gap-8 pt-8 pb-16 md:grid-cols-12 md:gap-10 md:pt-10">
         {/* Picture column (first on phones) */}
-        <div className="md:order-2 md:col-span-7">
+        <div className="flex flex-col md:col-span-6">
           {views.length > 1 && (
-            <div className="mb-3 flex justify-center gap-2" role="tablist" aria-label="Pack views">
+            <div className="order-2 mt-3 flex justify-center gap-2" role="tablist" aria-label="Pack views">
               {views.map((v) => (
                 <button
                   key={v.id}
@@ -271,16 +287,18 @@ export function ProductView({ slug }: { slug: string }) {
                   aria-selected={view === v.id}
                   aria-label={v.label}
                   onClick={() => setView(v.id)}
-                  className={`relative size-14 overflow-hidden transition-opacity md:size-16 ${view === v.id ? "opacity-100" : "opacity-45 hover:opacity-80"}`}
+                  className={`relative size-14 overflow-hidden rounded-md border transition-all md:size-[72px] ${view === v.id ? "border-accent opacity-100" : "border-line opacity-60 hover:opacity-100"}`}
                   style={v.id === "macro" ? { background: need.shade } : undefined}
                 >
-                  <Image src={packSrc(p, v.id === "turn" ? "front" : v.id)} alt="" fill sizes="64px" className={v.id === "macro" ? "object-cover" : "object-contain"} />
+                  <Image src={v.id === "plinth" ? plinthSrc(p) : packSrc(p, v.id === "turn" ? "front" : v.id)} alt="" fill sizes="72px" className={v.id === "macro" || v.id === "plinth" ? "object-cover" : "object-contain"} />
                 </button>
               ))}
             </div>
           )}
-          <div ref={hero} className="relative aspect-square overflow-hidden md:aspect-[5/5.2]" style={view === "macro" ? { background: need.shade } : undefined}>
-            {view === "turn" && live ? (
+          <div ref={hero} className="relative order-1 aspect-square overflow-hidden rounded-lg bg-snow" style={view === "macro" ? { background: need.shade } : undefined}>
+            {view === "plinth" ? (
+              <Image key="plinth" src={plinthSrc(p)} alt={packAlt(p)} fill priority sizes="(min-width:768px) 50vw, 100vw" data-pack={p.slug} className="object-cover motion-safe:animate-[fadein_.5s_ease-out]" />
+            ) : view === "turn" && live ? (
               <div className="absolute inset-[6%_14%]">
                 <Turntable p={p} />
               </div>
@@ -297,6 +315,7 @@ export function ProductView({ slug }: { slug: string }) {
               />
             )}
             {view !== "macro" &&
+              view !== "plinth" &&
               keys.map((k, i) => (
                 <div key={k} data-ing className={`pointer-events-none absolute aspect-square ${SPOTS[i]}`} aria-hidden>
                   <Image src={ingredientImage(k)} alt="" fill sizes="15vw" className="object-contain" />
@@ -306,20 +325,15 @@ export function ProductView({ slug }: { slug: string }) {
         </div>
 
         {/* Text column */}
-        <div className="md:order-1 md:col-span-5 md:pt-6">
-          <nav aria-label="Breadcrumb" className="crumbs flex flex-wrap gap-2">
-            <Link href="/shop" className="hover:text-charcoal">
-              [Shop]
-            </Link>
-            <Link href={`/shop?need=${p.need}`} className="hover:text-charcoal">
-              [{need.name}]
-            </Link>
-            <span aria-current="page">[{p.code}]</span>
-          </nav>
-          <h1 className="h-display mt-4" data-split>
-            {p.name}
-          </h1>
-          <p className="mt-2 text-[0.875rem]">{p.format}</p>
+        <div className="md:col-span-6">
+          {live && (
+            <p className="flex items-center gap-2 text-[0.875rem] text-accent">
+              <Icon.Flask className="size-4" /> {doseCount(p)} actives, every dose on the label
+            </p>
+          )}
+          <h1 className="mt-2 font-display text-[clamp(1.75rem,1.3rem+1.4vw,2.5rem)] leading-tight font-semibold">{p.name}</h1>
+          {live && <p className="tnum mt-2 text-[1.5rem] text-charcoal">{formatINR(price)}</p>}
+          <p className="mt-2 text-[0.9375rem]">{p.format}</p>
 
           {live && keys.length > 0 && (
             <div className="mt-6">
@@ -389,11 +403,18 @@ export function ProductView({ slug }: { slug: string }) {
           </div>
 
           {live ? (
-            <div ref={buy} className="mt-8 space-y-4">
+            <div ref={buy} className="mt-6 space-y-4">
+              <p className="flex flex-wrap items-center gap-2 text-[0.9375rem] text-charcoal">
+                <Icon.Truck className="size-5" /> Get it by <span className="underline">{eta || "in 3 to 5 days"}</span>
+                <span className="text-[0.8125rem] text-graphite">(estimate)</span>
+              </p>
+              <p className="flex items-center gap-2 text-[0.9375rem] text-charcoal">
+                <Icon.Check className="size-5 text-veg" /> Cash or UPI on delivery
+              </p>
               {p.trialPack && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[0.875rem]">Pack</span>
-                  <div className="flex gap-1" role="radiogroup" aria-label="Pack size">
+                <div>
+                  <p className="label mb-2">Pack: {option === "trial" ? p.trialPack.packCount : p.packCount}</p>
+                  <div className="flex gap-2" role="radiogroup" aria-label="Pack size">
                     {(
                       [
                         ["trial", p.trialPack.packCount],
@@ -406,7 +427,7 @@ export function ProductView({ slug }: { slug: string }) {
                         role="radio"
                         aria-checked={option === id}
                         onClick={() => setOption(id)}
-                        className={`h-9 px-3 text-[0.8125rem] transition-colors ${option === id ? "bg-charcoal text-snow" : "bg-off hover:bg-[#ececec]"}`}
+                        className="pill-option"
                       >
                         {label}
                       </button>
@@ -418,9 +439,18 @@ export function ProductView({ slug }: { slug: string }) {
                 <input type="checkbox" checked={subscribe} onChange={(e) => setSubscribe(e.target.checked)} />
                 Deliver every month, 15% off. Skip or stop from your account.
               </label>
-              <div className="flex gap-1.5">
-                <WishlistButton slug={p.slug} name={p.name} className="!size-12 shrink-0 bg-off hover:bg-[#ececec]" />
-                <AddToCart product={p} option={option} subscribe={subscribe} withPrice={price} className="flex-1" />
+              <div className="flex items-stretch gap-2">
+                <div className="flex min-w-[150px] flex-1 flex-col justify-center rounded-xl border border-charcoal px-4 py-3 text-[0.875rem] text-charcoal">
+                  <span className="flex items-center gap-2 font-semibold">
+                    <Icon.Truck className="size-4 text-accent" /> Free delivery
+                  </span>
+                  <span className="text-graphite">on orders over {formatINR(FREE_SHIPPING_AT)}</span>
+                </div>
+                <AddToCart product={p} option={option} subscribe={subscribe} withPrice={price} className="!min-h-16 flex-[1.4] !text-[1.0625rem]" />
+              </div>
+              <div className="flex items-center gap-2">
+                <WishlistButton slug={p.slug} name={p.name} className="!size-10 rounded-full border border-line" />
+                <span className="text-[0.875rem]">Save to wishlist</span>
               </div>
             </div>
           ) : (
@@ -430,6 +460,71 @@ export function ProductView({ slug }: { slug: string }) {
           )}
         </div>
       </section>
+
+      {live && (
+        <section className="wrap" aria-labelledby="info-h">
+          <div className="overflow-hidden rounded-2xl" style={{ background: need.colour, color: need.ink }}>
+            <div className="grid items-center gap-6 p-6 md:grid-cols-2 md:p-12">
+              <div>
+                <p className="font-display text-[0.9375rem] tracking-[0.12em] uppercase opacity-80">Superbeing · {need.name}</p>
+                <h2 id="info-h" className="mt-2 font-display text-[clamp(2rem,1.2rem+3vw,3.75rem)] leading-none font-bold uppercase" style={{ color: need.ink }}>
+                  {p.name.replace("™", "")}
+                </h2>
+                <p className="mt-3 text-[1rem] opacity-90">{p.format}</p>
+                <p className="mt-6 max-w-[48ch] text-[1.0625rem] font-medium">{p.tagline}</p>
+              </div>
+              <div className="relative aspect-[4/3]">
+                <Image src={hasDuo(p) ? packSrc(p, "duo") : packSrc(p)} alt={packAlt(p, hasDuo(p) ? "duo" : "front")} fill sizes="(min-width:768px) 45vw, 90vw" className="object-contain" />
+              </div>
+            </div>
+            <div className="grid gap-8 bg-snow/90 p-6 text-charcoal md:grid-cols-2 md:p-12">
+              <div>
+                <h3 className="font-display text-[1.5rem] font-semibold">What is {p.name.replace("™", "")}?</h3>
+                <p className="mt-3 text-[0.9375rem]">{p.forWho}</p>
+                <p className="mt-3 text-[0.9375rem]">{p.difference}</p>
+              </div>
+              <div>
+                <h3 className="font-display text-[1.5rem] font-semibold">Why you&apos;ll love it</h3>
+                <ul className="mt-4 grid grid-cols-2 gap-4" data-stagger>
+                  {p.claims.slice(0, 4).map((c, k) => {
+                    const Ico = [Icon.Leaf, Icon.Flask, Icon.Target, Icon.Shield][k % 4];
+                    return (
+                      <li key={c} className="flex flex-col items-center gap-2 text-center text-[0.875rem]">
+                        <span className="grid size-14 place-items-center rounded-full border-2 border-accent text-accent">
+                          <Ico className="size-7" />
+                        </span>
+                        {c}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+            <div className="bg-snow p-6 text-charcoal md:p-12">
+              <h3 className="text-center font-display text-[1.5rem] font-semibold">Key ingredients, with their doses</h3>
+              <ul className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4" data-stagger>
+                {keys.map((k) => (
+                  <li key={k} className="text-center">
+                    <span className="relative mx-auto block size-28 overflow-hidden rounded-full" style={{ background: need.colour }}>
+                      <Image src={ingredientImage(k)} alt="" fill sizes="112px" className="object-contain p-3" />
+                    </span>
+                    <p className="mt-3 text-[0.9375rem] font-medium">{k}</p>
+                    <p className="tnum text-[0.875rem] text-accent">{doseFor(p, k) ?? "See label"} per serve</p>
+                  </li>
+                ))}
+              </ul>
+              <h3 className="mt-14 text-center font-display text-[1.5rem] font-semibold">Why {p.name.replace("™", "")}?</h3>
+              <ul className="mx-auto mt-6 grid max-w-[640px] gap-3" data-stagger>
+                {p.claims.map((c) => (
+                  <li key={c} className="rounded-full border-2 border-accent px-6 py-3 text-center text-[0.9375rem] font-medium">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
       {live && (
         <section className="wrap grid gap-10 py-16 md:grid-cols-12 md:gap-6 md:py-24" aria-labelledby="label-h">
@@ -461,28 +556,36 @@ export function ProductView({ slug }: { slug: string }) {
       )}
 
       <section className="wrap pb-24" aria-labelledby="same-h">
-        <h2 id="same-h" className="h-display" data-split>
-          Same need
+        <h2 id="same-h" className="sec-title" data-rise>
+          You may also like
         </h2>
-        <ul className="mt-8 grid grid-cols-2 gap-x-1.5 gap-y-8 lg:grid-cols-4" data-stagger>
-          {same.map((x) => (
-            <li key={x.slug}>
-              <ProductCard product={x} />
-            </li>
-          ))}
-        </ul>
+        <div className="mt-10">
+          <Carousel label="You may also like">
+            {same.map((x) => (
+              <ProductCard key={x.slug} product={x} />
+            ))}
+          </Carousel>
+        </div>
       </section>
 
       {live && (
         <div
-          className={`fixed inset-x-0 bottom-0 z-30 flex gap-1.5 bg-snow p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] md:hidden ${
-            showBar ? "translate-y-0" : "translate-y-full"
+          className={`fixed inset-x-0 bottom-14 z-30 border-t border-line bg-snow shadow-[0_-10px_30px_-20px_rgba(0,0,0,.3)] transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] lg:bottom-0 ${
+            showBar ? "translate-y-0" : "translate-y-[calc(100%+60px)]"
           }`}
           aria-hidden={!showBar}
           inert={!showBar}
         >
-          <WishlistButton slug={p.slug} name={p.name} className="!size-12 shrink-0 bg-off" />
-          <AddToCart product={p} option={option} subscribe={subscribe} withPrice={price} className="flex-1" />
+          <div className="wrap flex items-center gap-4 py-3">
+            <span className="relative hidden size-12 shrink-0 overflow-hidden rounded-md sm:block">
+              <Image src={plinthSrc(p)} alt="" fill sizes="48px" className="object-cover" />
+            </span>
+            <span className="hidden min-w-0 flex-1 md:block">
+              <span className="block truncate text-[0.9375rem] font-medium text-charcoal">{p.name}</span>
+              <span className="tnum text-[0.875rem]">{formatINR(price)}</span>
+            </span>
+            <AddToCart product={p} option={option} subscribe={subscribe} withPrice={price} className="flex-1 md:max-w-[280px] md:flex-none" />
+          </div>
         </div>
       )}
     </div>

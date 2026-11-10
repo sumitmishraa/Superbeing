@@ -50,6 +50,9 @@ interface StoreState {
   cartOpen: boolean;
   searchOpen: boolean;
   menuOpen: boolean;
+  quickShop: string | null;
+  popupSeen: boolean;
+  annClosed: boolean;
   lastRemoved: { line: CartLine; index: number } | null;
 
   addToCart: (slug: string, opts?: { qty?: number; option?: PackOption; subscribe?: boolean; open?: boolean }) => void;
@@ -72,6 +75,9 @@ interface StoreState {
   setCartOpen: (v: boolean) => void;
   setSearchOpen: (v: boolean) => void;
   setMenuOpen: (v: boolean) => void;
+  setQuickShop: (slug: string | null) => void;
+  setPopupSeen: () => void;
+  closeAnnouncement: () => void;
 }
 
 const COUPONS: Record<string, number> = { FIRSTLABEL: 0.1 };
@@ -91,6 +97,9 @@ export const useStore = create<StoreState>()(
       cartOpen: false,
       searchOpen: false,
       menuOpen: false,
+      quickShop: null,
+      popupSeen: false,
+      annClosed: false,
       lastRemoved: null,
 
       addToCart: (slug, opts = {}) => {
@@ -168,6 +177,9 @@ export const useStore = create<StoreState>()(
       setCartOpen: (cartOpen) => set({ cartOpen }),
       setSearchOpen: (searchOpen) => set({ searchOpen }),
       setMenuOpen: (menuOpen) => set({ menuOpen }),
+      setQuickShop: (quickShop) => set({ quickShop }),
+      setPopupSeen: () => set({ popupSeen: true }),
+      closeAnnouncement: () => set({ annClosed: true }),
     }),
     {
       name: "superbeing-store",
@@ -183,6 +195,7 @@ export const useStore = create<StoreState>()(
         addresses: s.addresses,
         orders: s.orders,
         prefs: s.prefs,
+        popupSeen: s.popupSeen,
       }),
     },
   ),

@@ -1,15 +1,5 @@
-import { NewIn, Panels, About, CatalogPreview } from "@/components/home/HomeSections";
-import { Spotlight, Bestsellers } from "@/components/home/Showcase";
+import { HomePage } from "@/components/home/Home";
 
 export default function Home() {
-  return (
-    <>
-      <NewIn />
-      <Panels />
-      <About />
-      <Spotlight />
-      <Bestsellers />
-      <CatalogPreview />
-    </>
-  );
+  return <HomePage />;
 }

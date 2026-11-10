@@ -16,12 +16,10 @@ import { cartTotals, useHydrated, useStore } from "@/lib/store";
 /* ───────── shared bits ───────── */
 export function PageTitle({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="wrap flex flex-wrap items-end justify-between gap-4 pt-10 md:pt-16">
-      <h1 className="h-display" data-split>
-        {title}
-      </h1>
-      {children}
-    </div>
+    <>
+      <h1 className="title-band">{title}</h1>
+      {children && <div className="wrap flex justify-center pt-5">{children}</div>}
+    </>
   );
 }
 
@@ -160,14 +158,18 @@ export function CartView() {
         </p>
       </PageTitle>
       <div className="wrap mt-8 grid gap-10 lg:grid-cols-12 lg:gap-6">
-        <div className="lg:col-span-6">
+        <div className={lines.length === 0 ? "lg:col-span-12" : "lg:col-span-6"}>
           {lines.length === 0 ? (
             <div>
-              <p className="text-[1.25rem]">{hydrated ? "Your cart is empty." : "Loading your cart…"}</p>
-              <UndoBar />
-              <Link href="/shop" className="btn mt-6">
-                Shop all products
-              </Link>
+              <div className="py-10 text-center">
+                <Icon.Bag className="mx-auto size-16 text-graphite" />
+                <p className="mt-4 font-display text-[1.75rem] font-semibold text-charcoal uppercase">{hydrated ? "Your cart is empty." : "Loading your cart…"}</p>
+                <p className="mt-2 text-[0.9375rem]">Add a formula from the shop to get started.</p>
+                <UndoBar />
+                <Link href="/shop" className="btn mt-6">
+                  Return to shop
+                </Link>
+              </div>
             </div>
           ) : (
             <>

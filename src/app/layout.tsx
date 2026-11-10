@@ -1,49 +1,45 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/shell/Header";
+import { Header, MobileTabBar } from "@/components/shell/Header";
 import { Footer } from "@/components/shell/Footer";
 import { CartDrawer } from "@/components/shell/CartDrawer";
 import { SearchPalette } from "@/components/shell/SearchPalette";
 import { MenuOverlay } from "@/components/shell/MenuOverlay";
+import { NewsletterPopup, QuickShop } from "@/components/shell/Modals";
 import { Providers } from "@/components/shell/Providers";
 
-const switzer = localFont({
-  variable: "--font-switzer",
-  display: "swap",
-  src: [
-    { path: "../fonts/Switzer-300.woff2", weight: "300" },
-    { path: "../fonts/Switzer-400.woff2", weight: "400" },
-    { path: "../fonts/Switzer-500.woff2", weight: "500" },
-    { path: "../fonts/Switzer-600.woff2", weight: "600" },
-  ],
-});
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin"], weight: ["500", "600", "700"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Superbeing Nutrition · Your need is specific",
+    default: "Superbeing Nutrition · Formulas for one specific need",
     template: "%s · Superbeing Nutrition",
   },
   description: "Nutrition built for one specific need at a time, with every active dose printed on the pack. From Nuvexa Biotech, Bengaluru.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#a0153e",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={switzer.variable} suppressHydrationWarning>
+    <html lang="en-IN" className={`${inter.variable} ${oswald.variable}`} suppressHydrationWarning>
       <body>
         <Providers>
           <Header />
           <main id="main">{children}</main>
           <Footer />
+          <MobileTabBar />
           <MenuOverlay />
           <SearchPalette />
           <CartDrawer />
+          <QuickShop />
+          <NewsletterPopup />
         </Providers>
       </body>
     </html>

@@ -84,7 +84,7 @@ const save = (file, dataUrl) => {
 };
 const r = (spec) => evaluate(`window.studio.render(${JSON.stringify(spec)})`);
 
-const SIZES = { front: [1000, 1250], duo: [1200, 1200], back: [1000, 1250], macro: [1600, 1200], turn: [720, 900] };
+const SIZES = { front: [1000, 1250], duo: [1200, 1200], back: [1000, 1250], macro: [1600, 1200], turn: [720, 900], plinth: [900, 900], "plinth-back": [900, 900] };
 let n = 0;
 try {
   for (const p of live) {
@@ -103,6 +103,24 @@ try {
     }
     console.log("rendered", p.slug);
   }
+  if (ONLY.includes("stages")) {
+    const STAGES = [
+      { name: "hero-sleep", slugs: ["night-recovery-magnesium"], bg: "#C9D0E6", podium: "#ffffff", w: 1920, h: 1000, align: "right" },
+      { name: "hero-hydration", slugs: ["hydra-move", "hydra-zero"], bg: "#CFE8EB", podium: "#ffffff", w: 1920, h: 1000, align: "right" },
+      { name: "tile-sleep", slugs: ["night-recovery-magnesium"], bg: "#C9D0E6", podium: "#ffffff", w: 900, h: 900, align: "center" },
+      { name: "tile-hydration", slugs: ["hydra-zero"], bg: "#CFE8EB", podium: "#ffffff", w: 900, h: 900, align: "center" },
+      { name: "tile-beauty", slugs: ["collagen-glow-matrix"], bg: "#F4D3DB", podium: "#ffffff", w: 900, h: 900, align: "center" },
+      { name: "feature-new", slugs: ["collagen-glow-matrix"], bg: "#F4D3DB", podium: "#ffffff", w: 1100, h: 1100, align: "center" },
+      { name: "popup", slugs: ["bloat-gut-reset", "collagen-glow-matrix"], bg: "#A0153E", podium: "#ffffff", w: 900, h: 1100, align: "center" },
+      { name: "collection-hero", slugs: ["omega-precision", "stresscalm-nutrition", "bloat-gut-reset", "hydra-zero", "night-recovery-magnesium"], bg: "#F3E6EB", podium: "#ffffff", w: 2400, h: 900, align: "right" },
+      { name: "label-banner", slugs: ["hair-root", "daily-fibre-gap", "indian-vegetarian-complete", "brain-age-40-plus"], bg: "#7E0F30", podium: "#ffffff", w: 2000, h: 900, align: "right" },
+    ];
+    for (const s of STAGES) {
+      save(path.join(ROOT, "public/media/gen", `${s.name}.webp`), await evaluate(`window.studio.renderStage(${JSON.stringify(s)})`));
+      n++;
+      console.log("rendered stage", s.name);
+    }
+  }
   if (ONLY.includes("materials") || (!ONLY.length && VIEWS.includes("materials"))) {
     for (const k of await evaluate("window.studio.materials")) {
       save(path.join(ROOT, "public/ingredients", `${k}.webp`), await evaluate(`window.studio.renderMaterial({ kind: ${JSON.stringify(k)} })`));
@@ -113,7 +131,8 @@ try {
   if (!ONLY.length || ONLY.includes("blank")) {
     for (const s of ["carton", "stick", "melt", "bottle"]) {
       save(path.join(OUT, "_blank", `${s}.webp`), await r({ blank: s, view: "front", w: 1000, h: 1250 }));
-      n++;
+      save(path.join(OUT, "_blank", `${s}-plinth.webp`), await r({ blank: s, view: "plinth", w: 900, h: 900 }));
+      n += 2;
     }
     console.log("rendered blanks");
   }

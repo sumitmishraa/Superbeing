@@ -3,7 +3,9 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NEEDS, NEED_BY_ID, PRODUCTS, type Line, type NeedId, type PackShape, type Product } from "@/data/products";
+import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
+import { SCENES } from "@/lib/media";
 import { Icon } from "@/components/ui";
 import { useOverlay } from "@/components/shell/useOverlay";
 import { Flip, gsap, reduceMotion } from "@/lib/gsap";
@@ -91,6 +93,10 @@ export function ShopView() {
   const need = get("need") as NeedId | "";
   const sort = get("sort") || "need";
   const list = useMemo(() => filterList((k) => sp.get(k) ?? ""), [sp]);
+  const PER = 12;
+  const pages = Math.max(1, Math.ceil(list.length / PER));
+  const page = Math.min(pages, Math.max(1, Number(sp.get("page")) || 1));
+  const pageList = list.slice((page - 1) * PER, page * PER);
   const active = KEYS.filter((k) => get(k)).length;
   const n = need ? NEED_BY_ID[need] : null;
   const title = n ? n.name : get("status") === "coming-soon" ? "Coming soon" : get("line") === "women" ? "For her" : get("line") === "men" ? "For him" : "All products";
@@ -104,6 +110,7 @@ export function ShopView() {
     const next = new URLSearchParams(sp.toString());
     if (!v) next.delete(k);
     else next.set(k, v);
+    if (k !== "page") next.delete("page");
     replace(next);
   };
 
@@ -139,61 +146,100 @@ export function ShopView() {
   const box = (k: Key, v: string, label: string) => <Check key={`${k}-${v}`} checked={draft[k] === v} onChange={() => toggle(k, v)} label={label} />;
 
   return (
-    <div className="wrap pt-10 pb-24 md:pt-16">
-      <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-        <h1 className="h-display">{title}</h1>
-        <p className="tnum pb-1 text-[0.875rem]" aria-live="polite">
-          {list.length} {list.length === 1 ? "product" : "products"}
-        </p>
-        <p className="basis-full pt-3 text-[1rem] leading-snug text-graphite">{n ? n.question : "Every formula is built for one specific need, with every dose printed on the pack."}</p>
-      </div>
+    <div className="pb-24">
+      <section className="relative overflow-hidden bg-[#f3e6eb]" aria-labelledby="shop-title">
+        <div className="relative aspect-[16/9] md:aspect-[24/7]">
+          <Image src={SCENES.collection.src} alt={SCENES.collection.alt} fill priority sizes="100vw" className="object-cover object-right" />
+        </div>
+        <div className="wrap-wide absolute inset-0 flex items-center">
+          <div className="max-w-[460px]">
+            <h1 id="shop-title" className="font-display text-[clamp(2rem,1.2rem+3vw,3.75rem)] leading-none font-bold uppercase">
+              {title}
+            </h1>
+            <p className="mt-3 text-[1rem] text-charcoal">{n ? n.question : "Every formula is built for one specific need, with every dose printed on the pack."}</p>
+          </div>
+        </div>
+      </section>
 
-      <div className="mt-8 flex items-center justify-between gap-6 border-b border-charcoal pb-3">
-        <div className="no-scrollbar -mx-[var(--gutter)] flex gap-3 overflow-x-auto px-[var(--gutter)] md:mx-0 md:px-0" role="toolbar" aria-label="Filter by need">
-          <button type="button" className="chip" aria-pressed={!need} onClick={() => set("need", null)}>
-            [All]
+      <div className="wrap">
+        <nav aria-label="Shop by need" className="no-scrollbar -mx-[var(--gutter)] flex gap-6 overflow-x-auto px-[var(--gutter)] py-8 md:justify-center">
+          <button type="button" onClick={() => set("need", null)} aria-pressed={!need} className="group flex shrink-0 flex-col items-center gap-2">
+            <span className={`grid size-16 place-items-center rounded-full border-2 transition-colors ${!need ? "border-accent text-accent" : "border-line text-charcoal group-hover:border-accent"}`}>
+              <Icon.Bag className="size-6" />
+            </span>
+            <span className="text-[0.875rem] text-charcoal">All</span>
           </button>
           {NEEDS.map((x) => (
-            <button key={x.id} type="button" className="chip" aria-pressed={need === x.id} onClick={() => set("need", need === x.id ? null : x.id)}>
-              [{x.short}]
+            <button key={x.id} type="button" onClick={() => set("need", need === x.id ? null : x.id)} aria-pressed={need === x.id} className="group flex shrink-0 flex-col items-center gap-2">
+              <span className={`grid size-16 place-items-center rounded-full border-2 transition-colors ${need === x.id ? "border-accent" : "border-transparent group-hover:border-accent"}`} style={{ background: x.colour }}>
+                <span className="size-6 rounded-full bg-snow/70" />
+              </span>
+              <span className={`text-[0.875rem] whitespace-nowrap ${need === x.id ? "text-accent" : "text-charcoal"}`}>{x.short}</span>
             </button>
           ))}
-        </div>
-        <div className="flex shrink-0 items-center gap-5 text-[0.8125rem]">
-          <label className="relative hidden items-center gap-1 sm:flex">
+        </nav>
+
+        <h2 className="sec-title">Explore our full range</h2>
+
+        <div className="mt-8 flex items-center justify-between gap-6">
+          <button type="button" onClick={openFilters} className="flex min-h-11 items-center gap-2 text-[0.9375rem] text-charcoal" aria-haspopup="dialog">
+            <Icon.Filters className="size-5" />
+            Filter{active ? ` (${active})` : ""}
+          </button>
+          <p className="tnum hidden text-[0.875rem] sm:block" aria-live="polite">
+            {list.length} {list.length === 1 ? "product" : "products"}
+          </p>
+          <label className="relative flex items-center rounded-full border border-line px-4 py-2 text-[0.875rem] text-charcoal">
             <span className="sr-only">Sort</span>
-            <select value={sort} onChange={(e) => set("sort", e.target.value === "need" ? null : e.target.value)} className="appearance-none bg-transparent pr-5 outline-none">
+            <select value={sort} onChange={(e) => set("sort", e.target.value === "need" ? null : e.target.value)} className="appearance-none bg-transparent pr-6 outline-none">
               {SORTS.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>
               ))}
             </select>
-            <Icon.Chevron className="pointer-events-none absolute right-0 size-3.5" />
+            <Icon.Chevron className="pointer-events-none absolute right-3 size-3.5" />
           </label>
-          <button type="button" onClick={openFilters} className="flex min-h-11 items-center gap-1.5" aria-haspopup="dialog">
-            <Icon.Filters className="size-5" />
-            Filters{active ? ` (${active})` : ""}
-          </button>
         </div>
-      </div>
 
-      {list.length === 0 ? (
-        <div className="mt-10 bg-off p-8">
-          <p className="text-[1.25rem]">Nothing matches all of those filters.</p>
-          <button type="button" onClick={() => replace(new URLSearchParams(need ? { need } : {}))} className="btn mt-6">
-            Clear filters
-          </button>
-        </div>
-      ) : (
-        <ul ref={grid} className="mt-6 grid grid-cols-2 gap-x-1.5 gap-y-8 lg:grid-cols-4" data-stagger>
-          {list.map((p, i) => (
-            <li key={p.slug} data-flip-id={p.slug}>
-              <ProductCard product={p} priority={i < 4} />
-            </li>
-          ))}
-        </ul>
-      )}
+        {list.length === 0 ? (
+          <div className="mt-10 rounded-xl bg-off p-8 text-center">
+            <p className="text-[1.25rem] text-charcoal">Nothing matches all of those filters.</p>
+            <button type="button" onClick={() => replace(new URLSearchParams(need ? { need } : {}))} className="btn mt-6">
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <ul ref={grid} className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4" data-stagger>
+            {pageList.map((p, i) => (
+              <li key={p.slug} data-flip-id={p.slug}>
+                <ProductCard product={p} priority={i < 4} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {pages > 1 && (
+          <nav aria-label="Pages" className="mt-14 flex items-center justify-center gap-2 border-t border-line pt-8">
+            {Array.from({ length: pages }, (_, k) => k + 1).map((n2) => (
+              <button
+                key={n2}
+                type="button"
+                onClick={() => set("page", n2 === 1 ? null : String(n2))}
+                aria-current={n2 === page ? "page" : undefined}
+                className={`tnum grid size-10 place-items-center rounded-full text-[0.9375rem] ${n2 === page ? "bg-accent text-snow" : "text-charcoal hover:text-accent"}`}
+              >
+                {n2}
+              </button>
+            ))}
+            {page < pages && (
+              <button type="button" onClick={() => set("page", String(page + 1))} className="ml-2 text-[0.9375rem] text-charcoal hover:text-accent">
+                Next
+              </button>
+            )}
+          </nav>
+        )}
+      </div>
 
       <div ref={scrim} style={{ display: "none" }}
       className="invisible fixed inset-0 z-50 bg-charcoal/40 opacity-0" onClick={() => setPanel(false)} aria-hidden />
