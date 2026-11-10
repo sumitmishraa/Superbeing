@@ -1,3 +1,5 @@
+/** Picture paths and alt text: pack renders, turntable frames, ingredient pictures and lifestyle scenes. */
+
 import type { Product } from "@/data/products";
 
 /** Pack renders made by tools/pack-studio. Coming-soon products only ever get an unbranded pack. */
@@ -16,7 +18,7 @@ export const hasDuo = (p: Product) => p.status === "live" && SACHET_SHAPES.inclu
 export const turnSrc = (p: Product, i: number) =>
   `/packs/${p.slug}/turn/${String(((i % TURN_FRAMES) + TURN_FRAMES) % TURN_FRAMES).padStart(2, "0")}.webp`;
 
-export function packKind(p: Product) {
+function packKind(p: Product) {
   return p.shape === "bottle" ? "tablet bottle" : p.shape === "tub" ? "softgel jar" : p.shape === "stick" ? "stick sachet" : p.shape === "melt" ? "mouth-melt sachet" : "sachet";
 }
 export function packAlt(p: Product, view: PackView = "front") {

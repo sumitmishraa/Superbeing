@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/site";
 import { Suspense } from "react";
-import { ShopView } from "@/components/shop/ShopView";
+import { ShopView } from "@/features/shop/ShopView";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Shop all formulas",
   description: "Every Superbeing formula, by need. Filter by need, line, format and diet.",
-};
+  path: "/shop",
+});
 
 export default function ShopPage() {
   return (

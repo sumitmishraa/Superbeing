@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { privateMeta } from "@/lib/site";
 import { Suspense } from "react";
-import { SuccessView } from "@/components/commerce/Views";
+import { SuccessView } from "@/features/checkout/SuccessView";
 
-export const metadata: Metadata = { title: "Order placed" };
+export const metadata: Metadata = privateMeta("Order placed", "/checkout/success");
 
 export default function SuccessPage() {
   return (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PackMarquee } from "@/components/shell/MenuOverlay";
+import { PackMarquee } from "@/components/ui";
 
 export default function NotFound() {
   return (

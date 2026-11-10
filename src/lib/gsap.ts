@@ -1,5 +1,7 @@
 "use client";
 
+/** GSAP with the plugins this site uses (ScrollTrigger, SplitText, Flip), registered once in the browser. */
+
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";

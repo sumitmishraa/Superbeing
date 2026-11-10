@@ -1,3 +1,5 @@
+/** Fuzzy product search (Fuse.js) over names, needs, ingredients and descriptions. Used by the search overlay and /search. */
+
 import Fuse from "fuse.js";
 import { NEED_BY_ID, PRODUCTS, type Product } from "@/data/products";
 

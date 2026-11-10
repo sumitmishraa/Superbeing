@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { CartView } from "@/components/commerce/Views";
+import { privateMeta } from "@/lib/site";
+import { CartView } from "@/features/cart/CartView";
 
-export const metadata: Metadata = { title: "Your bag" };
+export const metadata: Metadata = privateMeta("Your bag", "/cart");
 
 export default function CartPage() {
   return <CartView />;

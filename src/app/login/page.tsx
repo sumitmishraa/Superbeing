@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { privateMeta } from "@/lib/site";
 import { Suspense } from "react";
-import { LoginView } from "@/components/commerce/AccountView";
+import { LoginView } from "@/features/account/LoginView";
 
-export const metadata: Metadata = { title: "Log in" };
+export const metadata: Metadata = privateMeta("Log in", "/login");
 
 export default function LoginPage() {
   return (

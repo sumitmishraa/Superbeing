@@ -1368,31 +1368,20 @@ const ALL_PRODUCTS: Product[] = [
 /** Everything the site may show. Hidden SKUs are removed here, before any page sees them. */
 export const PRODUCTS = ALL_PRODUCTS.filter((p) => !p.hidden);
 
+/** Products that can be bought today (everything visible except coming-soon). */
+export const LIVE_PRODUCTS = PRODUCTS.filter((p) => p.status === "live");
+
 export const PRODUCT_BY_SLUG = Object.fromEntries(PRODUCTS.map((p) => [p.slug, p])) as Record<string, Product>;
 
-export const LINES: { id: Line; name: string; blurb: string }[] = [
-  { id: "everyone", name: "For everyone", blurb: "Eighteen formulas for needs anyone can have, from bloating to heavy sweat." },
-  { id: "women", name: "For her", blurb: "Hair, skin and the monthly cycle, formulated for women." },
-  { id: "men", name: "For him", blurb: "Strength, recovery and skin, formulated for men." },
-];
-
-export const STANDARD_LABEL = [
-  "Health supplement. Not for medicinal use.",
-  "Not intended to diagnose, treat, cure or prevent any disease.",
-  "Do not exceed the recommended daily usage.",
-  "Pregnant or nursing, under 18, or on medication? Consult your doctor before use.",
-];
-
-export function productsByNeed(id: NeedId) {
-  return PRODUCTS.filter((p) => p.need === id);
-}
-
+/** "₹1,499" in Indian digit grouping. */
 export function formatINR(n: number) {
   return "₹" + n.toLocaleString("en-IN");
 }
 
+/** Number of actives with a disclosed dose (proprietary complexes are not counted). */
 export function doseCount(p: Product) {
   return p.formula.reduce((n, g) => n + g.items.filter((i) => i.dose !== "Not disclosed").length, 0);
 }
 
+/** Item total from which standard delivery is free (sample policy; see lib/pricing.ts). */
 export const FREE_SHIPPING_AT = 999;

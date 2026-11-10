@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { AccountView } from "@/components/commerce/AccountView";
+import { privateMeta } from "@/lib/site";
+import { AccountView } from "@/features/account/AccountView";
 
-export const metadata: Metadata = { title: "Your account" };
+export const metadata: Metadata = privateMeta("Your account", "/account");
 
 export default function AccountPage() {
   return <AccountView />;

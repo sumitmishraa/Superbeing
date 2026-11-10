@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ───────── Superbeing v3 tokens (layout after the shortcutx.co reference) ─────────
+/* ───────── Superbeing design tokens (layout after the shortcutx.co reference) ─────────
    Raspberry accent, charcoal ink, soft grey bands. Oswald for headings and buttons, Inter for text. */
 :root {
   --snow: #ffffff;
@@ -14,10 +14,21 @@
   --accent-soft: #f6e7ec;
   --veg: #1e8a3a;
   --nonveg: #7a3e1d;
+  /* Savings (green reads as "money kept" in Indian quick-commerce carts). */
+  --save: #13733a;
+  --save-soft: #e8f3ec;
 
   --gutter: clamp(1rem, 0.4rem + 2vw, 2.5rem);
   --header-h: 76px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Height of whatever bar is fixed to the bottom of the screen (tab bar on phones, pay bar on
+     cart and checkout). The footer pads by this so the bar never hides the end of the page. */
+  --bottom-bar: calc(3.5rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  :root {
+    --bottom-bar: 0px;
+  }
 }
 
 @theme inline {
@@ -32,6 +43,8 @@
   --color-accent-soft: var(--accent-soft);
   --color-veg: var(--veg);
   --color-nonveg: var(--nonveg);
+  --color-save: var(--save);
+  --color-save-soft: var(--save-soft);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-oswald), "Arial Narrow", sans-serif;
 }
